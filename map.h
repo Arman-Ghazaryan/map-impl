@@ -14,39 +14,42 @@ namespace dts
         class node
         {
         public:
-            node *left = nullptr;
-            node *right = nullptr;
-            node *parent = nullptr;
+            node* left = nullptr;
+            node* right = nullptr;
+            node* parent = nullptr;
             char clr = ' ';
-            value_type *pair_obj = nullptr;
+            value_type* pair_obj = nullptr;
             node();
-            node(const value_type &obj);
+            node(const value_type& obj);
             ~node();
         };
 
-        node *grandparent(node *nod);
-        node *uncle(node *nod);
+        node* grandparent(node* nod);
+        node* uncle(node* nod);
 
-        void rotate_right(node *nod);
-        void rotate_left(node *nod);
+        void rotate_right(node* nod);
+        void rotate_left(node* nod);
 
-        void insert_case1(node *nod);
-        void insert_case2(node *nod);
-        void insert_case3(node *nod);
-        void insert_case4(node *nod);
-        void insert_case5(node *nod);
+        void insert_case1(node* nod);
+        void insert_case2(node* nod);
+        void insert_case3(node* nod);
+        void insert_case4(node* nod);
+        void insert_case5(node* nod);
 
-        void insert(value_type &&obj);
+        void insert(value_type&& obj);
 
-        value &operator[](const key KEY);
+        value& operator[](const key KEY);
         // node *find_position(node *nod, key ky);
         // void delete_node(node *nod);
         // void delete_all_node(node *nod);
         // void erase(iterator pos);
 
     private:
-        node *root;
+        node* root;
         size_t Size;
+
+        void rnext(node* temp, node* new_node);
+        void lnext(node* temp, node* new_node);
     };
 
     template <typename key, typename value>
@@ -63,11 +66,21 @@ namespace dts
         Size = 0;
     }
 
-    template <typename key, typename value>
-    map<key, value>::node::node(const value_type &obj) : pair_obj(new value_type(obj)) {}
+    template<typename key, typename value>
+    map<key, value>::node::node()
+    {
+    }
 
     template <typename key, typename value>
-    typename map<key, value>::node *map<key, value>::grandparent(node *nod)
+    map<key, value>::node::node(const value_type& obj) : pair_obj(new value_type(obj)) {}
+
+    template<typename key, typename value>
+    map<key, value>::node::~node()
+    {
+    }
+
+    template <typename key, typename value>
+    typename map<key, value>::node* map<key, value>::grandparent(node* nod)
     {
         if ((nod != nullptr) && (nod->parent != nullptr))
             return nod->parent->parent;
@@ -76,9 +89,9 @@ namespace dts
     }
 
     template <typename key, typename value>
-    typename map<key, value>::node *map<key, value>::uncle(node *nod)
+    typename map<key, value>::node* map<key, value>::uncle(node* nod)
     {
-        node *g = grandparent(nod);
+        node* g = grandparent(nod);
         if (g == nullptr)
             return nullptr;
         if (nod->parent == g->left)
@@ -88,9 +101,9 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::rotate_left(node *nod)
+    void map<key, value>::rotate_left(node* nod)
     {
-        node *pivot = nod->right;
+        node* pivot = nod->right;
 
         pivot->parent = nod->parent;
         if (nod->parent != nullptr)
@@ -110,9 +123,9 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::rotate_right(node *nod)
+    void map<key, value>::rotate_right(node* nod)
     {
-        node *pivot = nod->left;
+        node* pivot = nod->left;
 
         pivot->parent = nod->parent;
         if (nod->parent != nullptr)
@@ -132,7 +145,7 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::insert_case1(node *nod)
+    void map<key, value>::insert_case1(node* nod)
     {
         if (nod->parent == nullptr)
             nod->clr = 'b';
@@ -141,7 +154,7 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::insert_case2(node *nod)
+    void map<key, value>::insert_case2(node* nod)
     {
         if (nod->parent->clr == 'b')
             return;
@@ -150,9 +163,9 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::insert_case3(node *nod)
+    void map<key, value>::insert_case3(node* nod)
     {
-        node *u = uncle(nod), *g;
+        node* u = uncle(nod), * g;
 
         if ((u != nullptr) && (u->clr == 'r'))
         {
@@ -169,9 +182,9 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::insert_case4(node *nod)
+    void map<key, value>::insert_case4(node* nod)
     {
-        node *g = grandparent(nod);
+        node* g = grandparent(nod);
 
         if ((nod == nod->parent->right) && (nod->parent == g->left))
         {
@@ -187,9 +200,9 @@ namespace dts
     }
 
     template <typename key, typename value>
-    void map<key, value>::insert_case5(node *nod)
+    void map<key, value>::insert_case5(node* nod)
     {
-        node *g = grandparent(nod);
+        node* g = grandparent(nod);
 
         nod->parent->clr = 'b';
         g->clr = 'r';
@@ -201,13 +214,15 @@ namespace dts
         {
             rotate_left(g);
         }
+        while (root->parent != nullptr)
+            root = root->parent;
     }
 
     template <typename key, typename value>
-    void map<key, value>::insert(value_type &&obj)
+    void map<key, value>::insert(value_type&& obj)
     {
-        node *temp = root;
-        node *new_node = new node(obj);
+        node* temp = root;
+        node* new_node = new node(obj);
         new_node->clr = 'r';
 
         if (!Size)
@@ -231,6 +246,9 @@ namespace dts
                     else
                     {
                         temp = temp->left;
+                        lnext(temp, new_node);
+                        rnext(temp, new_node);
+                        break;
                     }
                 }
                 else if (new_node->pair_obj->first > temp->pair_obj->first)
@@ -245,6 +263,9 @@ namespace dts
                     else
                     {
                         temp = temp->right;
+                        lnext(temp, new_node);
+                        rnext(temp, new_node);
+                        break;
                     }
                 }
             }
@@ -253,22 +274,68 @@ namespace dts
     }
 
     template <typename key, typename value>
-    value &map<key, value>::operator[](const key KEY)
+    value& map<key, value>::operator[](const key KEY)
     {
-        node *temp = root;
+        node* temp = root;
         while (true)
         {
+            assert(temp != nullptr);
             if (KEY == temp->pair_obj->first)
+            {
                 return temp->pair_obj->second;
+            }
             if (KEY < temp->pair_obj->first)
             {
-                assert(temp->left == nullptr);
                 temp = temp->left;
             }
-            else if (KEY > temp->pair_obj->first)
+            if (KEY > temp->pair_obj->first)
             {
-                assert(temp->right == nullptr);
                 temp = temp->right;
+            }
+        }
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::rnext(node* temp, node* new_node)
+    {
+
+        if (new_node->pair_obj->first > temp->pair_obj->first)
+        {
+            if (temp->right == nullptr)
+            {
+                temp->right = new_node;
+                new_node->parent = temp;
+                insert_case1(new_node);
+                return;
+            }
+            else
+            {
+                temp = temp->right;
+                lnext(temp, new_node);
+                rnext(temp, new_node);
+                return;
+            }
+        }
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::lnext(node* temp, node* new_node)
+    {
+        if (new_node->pair_obj->first < temp->pair_obj->first)
+        {
+            if (temp->left == nullptr)
+            {
+                temp->left = new_node;
+                new_node->parent = temp;
+                insert_case1(new_node);
+                return;
+            }
+            else
+            {
+                temp = temp->left;
+                lnext(temp, new_node);
+                rnext(temp, new_node);
+                return;
             }
         }
     }
