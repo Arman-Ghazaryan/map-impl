@@ -39,10 +39,6 @@ namespace dts
         void insert(value_type&& obj);
 
         value& operator[](const key KEY);
-        // node *find_position(node *nod, key ky);
-        // void delete_node(node *nod);
-        // void delete_all_node(node *nod);
-        // void erase(iterator pos);
 
     private:
         node* root;
