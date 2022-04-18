@@ -24,6 +24,28 @@ namespace dts
             ~node();
         };
 
+        
+
+        void insert(value_type&& obj);
+
+        node* begin() { return root; }
+
+        value& operator[](const key KEY);
+        // node *find_position(node *nod, key ky);
+        // void delete_node(node *nod);
+        // void delete_all_node(node *nod);
+
+       
+
+        void erase(key KEY);
+
+    private:
+        node* root;
+        size_t Size;
+
+        void rnext(node* temp, node* new_node);
+        void lnext(node* temp, node* new_node);
+
         node* grandparent(node* nod);
         node* uncle(node* nod);
 
@@ -36,16 +58,17 @@ namespace dts
         void insert_case4(node* nod);
         void insert_case5(node* nod);
 
-        void insert(value_type&& obj);
+        node* sibling(node* nod);
+        void replace_node(node* nod, node* child);
+        void delete_one_child(node* nod);
 
-        value& operator[](const key KEY);
+        void delete_case1(node* nod);
+        void delete_case2(node* nod);
+        void delete_case3(node* nod);
+        void delete_case4(node* nod);
+        void delete_case5(node* nod);
+        void delete_case6(node* nod);
 
-    private:
-        node* root;
-        size_t Size;
-
-        void rnext(node* temp, node* new_node);
-        void lnext(node* temp, node* new_node);
     };
 
     template <typename key, typename value>
@@ -287,6 +310,180 @@ namespace dts
             if (KEY > temp->pair_obj->first)
             {
                 temp = temp->right;
+            }
+        }
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_case1(node* nod)
+    {
+        if (nod->parent != nullptr)
+            delete_case2(nod);
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_case2(node* nod)
+    {
+        node* s = sibling(nod);
+
+        if (s->clr == 'r') {
+            nod->parent->clr = 'r';
+            s->clr = 'b';
+            if (nod == nod->parent->left)
+                rotate_left(nod->parent);
+            else
+                rotate_right(nod->parent);
+        }
+        delete_case3(nod);
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_case3(node* nod)
+    {
+        node* s = sibling(nod);
+
+        if ((nod->parent->clr == 'b') && (s->clr == 'b') && (s->left->clr == 'b') && (s->right->clr == 'b'))
+        {
+            s->clr = 'r';
+            delete_case1(nod->parent);
+        }
+        else
+            delete_case4(nod);
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_case4(node* nod)
+    {
+        node* s = sibling(nod);
+
+        if ((nod->parent->clr == 'r') && (s->clr == 'b') && (s->left->clr == 'b') && (s->right->clr == 'b'))
+        {
+            s->clr = 'r';
+            nod->parent->clr = 'b';
+        }
+        else
+            delete_case5(nod);
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_case5(node* nod)
+    {
+        node* s = sibling(nod);
+
+        if (s->clr == 'b') {
+            if ((nod == nod->parent->left) && (s->right->clr == 'b') && (s->left->clr == 'r'))
+            {
+                s->clr = 'r';
+                s->left->clr = 'b';
+                rotate_right(s);
+            }
+            else if ((nod == nod->parent->right) && (s->left->clr == 'b') && (s->right->clr == 'r'))
+            {
+                s->clr = 'r';
+                s->right->clr = 'b';
+                rotate_left(s);
+            }
+        }
+        delete_case6(nod);
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_case6(node* nod)
+    {
+        node* s = sibling(nod);
+
+        s->clr = nod->parent->clr;
+        nod->parent->clr = 'b';
+
+        if (nod == nod->parent->left) {
+            s->right->clr = 'b';
+            rotate_left(nod->parent);
+        }
+        else {
+            s->left->clr = 'b';
+            rotate_right(nod->parent);
+        }
+    }
+
+    template<typename key, typename value>
+    map<key, value>::node* map<key, value>::sibling(node* nod)
+    {
+        if (nod == nod->parent->left)
+            return nod->parent->right;
+        else
+            return nod->parent->left;
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::replace_node(node* nod, node* child)
+    {
+        child->parent = nod->parent;
+        if (nod == nod->parent->left) {
+            nod->parent->left = child;
+        }
+        else {
+            nod->parent->right = child;
+        }
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::delete_one_child(node* nod)
+    {
+        node* child = (nod->right == nullptr) ? nod->left : nod->right;
+
+        replace_node(nod, child);
+        if (nod->clr == 'b') {
+            if (child->clr == 'r')
+                child->clr = 'b';
+            else
+                delete_case1(child);
+        }
+        free(nod);
+    }
+
+    template<typename key, typename value>
+    void map<key, value>::erase(key KEY)
+    {
+        node* temp = root;
+        if (KEY == temp->pair_obj->first)
+        {
+
+        }
+        while (true)
+        {
+            if (KEY < temp->pair_obj->first)
+            {
+                if (temp->left == nullptr)
+                {
+                    temp->left = new_node;
+                    new_node->parent = temp;
+                    insert_case1(new_node);
+                    break;
+                }
+                else
+                {
+                    temp = temp->left;
+                    lnext(temp, new_node);
+                    rnext(temp, new_node);
+                    break;
+                }
+            }
+            else if (KEY > temp->pair_obj->first)
+            {
+                if (temp->right == nullptr)
+                {
+                    temp->right = new_node;
+                    new_node->parent = temp;
+                    insert_case1(new_node);
+                    break;
+                }
+                else
+                {
+                    temp = temp->right;
+                    lnext(temp, new_node);
+                    rnext(temp, new_node);
+                    break;
+                }
             }
         }
     }
