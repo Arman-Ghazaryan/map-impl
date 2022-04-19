@@ -1,12 +1,16 @@
 #pragma once
 #include <cassert>
+#include <string>
+#include "hash-library/sha256.h"
 
 namespace dts
 {
     template <typename key, typename value>
     class map
     {
+        using node_value_type = std::pair<const std::string, value>;
         using value_type = std::pair<const key, value>;
+        SHA256 hash;
 
     public:
         map();
@@ -18,9 +22,9 @@ namespace dts
             node *right = nullptr;
             node *parent = nullptr;
             char clr = ' ';
-            value_type *pair_obj = nullptr;
+            node_value_type *pair_obj = nullptr;
             node();
-            node(const value_type &obj);
+            node(const node_value_type &obj);
             ~node();
         };
 
@@ -86,7 +90,7 @@ namespace dts
     }
 
     template <typename key, typename value>
-    map<key, value>::node::node(const value_type &obj) : pair_obj(new value_type(obj)) {}
+    map<key, value>::node::node(const node_value_type &obj) : pair_obj(new node_value_type(obj)) {}
 
     template <typename key, typename value>
     map<key, value>::node::~node()
@@ -241,7 +245,10 @@ namespace dts
     void map<key, value>::insert(value_type &&obj)
     {
         node *temp = root;
-        node *new_node = new node(obj);
+        std::string hash_key =  hash(std::to_string(obj.first));
+        node_value_type new_obj(hash_key, obj.second);
+        node *new_node = new node;
+        new_node->pair_obj = &new_obj;
         new_node->clr = 'r';
 
         if (!Size)
@@ -295,19 +302,20 @@ namespace dts
     template <typename key, typename value>
     value &map<key, value>::operator[](const key KEY)
     {
+
         node *temp = root;
         while (true)
         {
             assert(temp != nullptr);
-            if (KEY == temp->pair_obj->first)
+            if (hash(KEY, 17) == temp->pair_obj->first)
             {
                 return temp->pair_obj->second;
             }
-            if (KEY < temp->pair_obj->first)
+            if (hash(KEY, 17) < temp->pair_obj->first)
             {
                 temp = temp->left;
             }
-            if (KEY > temp->pair_obj->first)
+            if (hash(KEY, 17) > temp->pair_obj->first)
             {
                 temp = temp->right;
             }
@@ -497,32 +505,44 @@ namespace dts
                 while (temp->right != nullptr)
                     temp = temp->right;
 
-                prnt = temp->parent;
+                // prnt = temp->parent;
 
-                if (temp->left != nullptr)
-                    temp->left->parent = temp->parent;
+                // if (temp->left != nullptr)
+                //     temp->left->parent = temp->parent;
 
-                if (temp == temp->parent->left)
-                    temp->parent->left = temp->left;
-                else
-                    temp->parent->right = temp->left;
+                // child = temp->left;
 
-                // to_delete->pair_obj->first = temp->pair_obj->first;
-                // to_delete->pair_obj->second = temp->pair_obj->second;
+                // if (temp == temp->parent->left)
+                //     temp->parent->left = temp->left;
+                // else
+                //     temp->parent->right = temp->left;
 
-                temp->left = to_delete->left;
-                temp->right = to_delete->right;
-                temp->parent = to_delete->parent;
+                // // to_delete->pair_obj->first = temp->pair_obj->first;
+                // // to_delete->pair_obj->second = temp->pair_obj->second;
 
-                delete to_delete;
-                delete_case1(temp);
+                // temp->left = to_delete->left;
+                // temp->right = to_delete->right;
+                // temp->parent = to_delete->parent;
 
-                if (temp = temp->parent->left)
-                    temp->parent->left = nullptr;
-                else
-                    temp->parent->right = nullptr;
+                // delete to_delete;
 
-                temp->parent = nullptr;
+                // if (prnt->left == nullptr && prnt->right != nullptr)
+                // {
+
+                // }
+                // else if (prnt->right == nullptr && prnt->left != nullptr))
+                // {
+
+                // }
+
+                // delete_case1(temp);
+
+                // if (temp = temp->parent->left)
+                //     temp->parent->left = nullptr;
+                // else
+                //     temp->parent->right = nullptr;
+
+                // temp->parent = nullptr;
             }
             temp = nullptr;
         }
