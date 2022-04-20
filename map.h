@@ -8,7 +8,7 @@ namespace dts
     template <typename key, typename value>
     class map
     {
-        using node_value_type = std::pair<const std::string, value>;
+        //using node_value_type = std::pair<const std::string, value>;
         using value_type = std::pair<const key, value>;
         SHA256 hash;
 
@@ -22,9 +22,10 @@ namespace dts
             node *right = nullptr;
             node *parent = nullptr;
             char clr = ' ';
-            node_value_type *pair_obj = nullptr;
+            //node_value_type *pair_obj = nullptr;
+            std::string key_;
+            value data;
             node();
-            node(const node_value_type &obj);
             ~node();
         };
 
@@ -90,16 +91,14 @@ namespace dts
     }
 
     template <typename key, typename value>
-    map<key, value>::node::node(const node_value_type &obj) : pair_obj(new node_value_type(obj)) {}
-
-    template <typename key, typename value>
     map<key, value>::node::~node()
     {
         left = nullptr;
         right = nullptr;
         parent = nullptr;
         clr = ' ';
-        pair_obj = nullptr;
+        key_ = {};
+        data = {};
     }
 
     template <typename key, typename value>
@@ -245,10 +244,9 @@ namespace dts
     void map<key, value>::insert(value_type &&obj)
     {
         node *temp = root;
-        std::string hash_key =  hash(std::to_string(obj.first));
-        node_value_type new_obj(hash_key, obj.second);
         node *new_node = new node;
-        new_node->pair_obj = &new_obj;
+        new_node->key_ = hash(std::to_string(obj.first));
+        new_node->data = obj.second;
         new_node->clr = 'r';
 
         if (!Size)
@@ -260,7 +258,7 @@ namespace dts
         {
             while (true)
             {
-                if (new_node->pair_obj->first < temp->pair_obj->first)
+                if (new_node->key_ < temp->key_)
                 {
                     if (temp->left == nullptr)
                     {
@@ -277,7 +275,7 @@ namespace dts
                         break;
                     }
                 }
-                else if (new_node->pair_obj->first > temp->pair_obj->first)
+                else if (new_node->key_ > temp->key_)
                 {
                     if (temp->right == nullptr)
                     {
@@ -302,20 +300,20 @@ namespace dts
     template <typename key, typename value>
     value &map<key, value>::operator[](const key KEY)
     {
-
+        std::string src_key = hash(std::to_string(KEY));
         node *temp = root;
         while (true)
         {
             assert(temp != nullptr);
-            if (hash(KEY, 17) == temp->pair_obj->first)
+            if (src_key == temp->key_)
             {
-                return temp->pair_obj->second;
+                return temp->data;
             }
-            if (hash(KEY, 17) < temp->pair_obj->first)
+            if (src_key < temp->key_)
             {
                 temp = temp->left;
             }
-            if (hash(KEY, 17) > temp->pair_obj->first)
+            if (src_key > temp->key_)
             {
                 temp = temp->right;
             }
@@ -460,20 +458,20 @@ namespace dts
     void map<key, value>::erase(key KEY)
     {
         node *temp = root, *to_delete, *prnt;
-        if (KEY != temp->pair_obj->first)
+        if (KEY != temp->key_)
         {
             while (true)
             {
-                if (KEY < temp->pair_obj->first)
+                if (KEY < temp->key_)
                 {
                     temp = temp->left;
-                    if (temp->pair_obj->first == KEY)
+                    if (temp->key_ == KEY)
                         break;
                 }
-                if (KEY > temp->pair_obj->first)
+                if (KEY > temp->key_)
                 {
                     temp = temp->right;
-                    if (temp->pair_obj->first == KEY)
+                    if (temp->key_ == KEY)
                         break;
                 }
             }
@@ -517,8 +515,8 @@ namespace dts
                 // else
                 //     temp->parent->right = temp->left;
 
-                // // to_delete->pair_obj->first = temp->pair_obj->first;
-                // // to_delete->pair_obj->second = temp->pair_obj->second;
+                // // to_delete->key_ = temp->key_;
+                // // to_delete->data = temp->data;
 
                 // temp->left = to_delete->left;
                 // temp->right = to_delete->right;
@@ -552,7 +550,7 @@ namespace dts
     void map<key, value>::rnext(node *temp, node *new_node)
     {
 
-        if (new_node->pair_obj->first > temp->pair_obj->first)
+        if (new_node->key_ > temp->key_)
         {
             if (temp->right == nullptr)
             {
@@ -574,7 +572,7 @@ namespace dts
     template <typename key, typename value>
     void map<key, value>::lnext(node *temp, node *new_node)
     {
-        if (new_node->pair_obj->first < temp->pair_obj->first)
+        if (new_node->key_ < temp->key_)
         {
             if (temp->left == nullptr)
             {
